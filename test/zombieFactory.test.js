@@ -1,5 +1,6 @@
 const { ethers } = require("hardhat");
 const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
+const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
 describe("ZombieFactory", function () {
@@ -8,12 +9,12 @@ describe("ZombieFactory", function () {
     // and reset Hardhat Network to that snapshot in every test.
     async function deployOneYearLockFixture() {
         // Contracts are deployed using the first signer/account by default
-        const [owner, otherAccount] = await ethers.getSigners();
+        const [owner, otherAccount1, otherAccount2] = await ethers.getSigners();
 
         const ZombieFactory = await ethers.getContractFactory("ZombieFactory");
         const zombieFactory = await ZombieFactory.deploy();
 
-        return { zombieFactory, owner, otherAccount };
+        return { zombieFactory, owner, otherAccount1, otherAccount2 };
     }
 
     describe("Deployment", function () {
@@ -36,12 +37,12 @@ describe("ZombieFactory", function () {
     describe("Create Zombie", function () {
         it("Should create some zombies", async function () {
             // Given
-            const { zombieFactory, otherAccount } = await loadFixture(deployOneYearLockFixture);
+            const { zombieFactory, otherAccount1, otherAccount2 } = await loadFixture(deployOneYearLockFixture);
 
             // When
-            await zombieFactory.connect(otherAccount).createRandomZombie("Zulu-1");
-            await zombieFactory.connect(otherAccount).createRandomZombie("Zulu-2");
-            await zombieFactory.connect(otherAccount).createRandomZombie("Zulu-3");
+            await zombieFactory.createRandomZombie("Zulu-1");
+            await zombieFactory.connect(otherAccount1).createRandomZombie("Zulu-2");
+            await zombieFactory.connect(otherAccount2).createRandomZombie("Zulu-3");
 
             const zombies = await zombieFactory.getZombies();
 
@@ -50,6 +51,18 @@ describe("ZombieFactory", function () {
             expect(zombies[0].name).to.equal("Zulu-1");
             expect(zombies[1].name).to.equal("Zulu-2");
             expect(zombies[2].name).to.equal("Zulu-3");
+        });
+    });
+
+    describe("Events", function () {
+        it("Should emit an event on zombie creation", async function () {
+            // Given
+            const { zombieFactory, otherAccount1 } = await loadFixture(deployOneYearLockFixture);
+
+            // When Then
+            await expect(await zombieFactory.connect(otherAccount1).createRandomZombie("Zulu-1"))
+                .to.emit(zombieFactory, "NewZombie")
+                .withArgs(0, "Zulu-1", anyValue);
         });
     });
 });
