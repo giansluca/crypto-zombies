@@ -38,6 +38,8 @@ contract ZombieFactory {
      * @dev create a zombie
      */
     function createRandomZombie(string memory _name) public {
+        require(msg.sender == owner, "Sender not authorized");
+
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
     }
