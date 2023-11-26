@@ -16,16 +16,22 @@ contract ZombieFactory {
     Zombie[] zombies;
 
     // Address of contract deployer
-    address payable public owner;
+    address payable public contractOwner;
 
-    // Deploy logic
+    mapping (uint => address) public zombieToOwner;
+    mapping (address => uint) ownerZombieCount;
+
     constructor() {
-        owner = payable(msg.sender);
+        contractOwner = payable(msg.sender);
     }
 
-    function _createZombie(string memory _name, uint _dna) private {
+    function _createZombie(string memory _name, uint _dna) internal {
         zombies.push(Zombie(_name, _dna));
         uint id = zombies.length - 1;
+
+        zombieToOwner[id] = msg.sender;
+        ownerZombieCount[msg.sender]++;
+
         emit NewZombie(id, _name, _dna);
     }
 
@@ -34,21 +40,15 @@ contract ZombieFactory {
         return rand % dnaModulus;
     }
 
-    /**
-     * @dev create a zombie
-     */
     function createRandomZombie(string memory _name) public {
-        require(msg.sender == owner, "Sender not authorized");
+        if (msg.sender != contractOwner)
+            require(ownerZombieCount[msg.sender] == 0, "Each user can create only one zombie!");
 
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
     }
 
-    /**
-    *  @dev retrieve all the zombies
-    */
     function getZombies() public view returns (Zombie[] memory) {
         return zombies;
     }
-
 }
