@@ -14,7 +14,7 @@
     "author": "",
     "license": "ISC",
     "devDependencies": {
-        "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+        "@nomicfoundation/hardhat-toolbox": "^4.0.0",
         "eslint": "^8.51.0",
         "hardhat": "^2.18.2",
         "prettier": "^3.0.3"
