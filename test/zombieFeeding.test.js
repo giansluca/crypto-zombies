@@ -77,4 +77,25 @@ describe("ZombieFeeding", function () {
                 .withArgs(3, "NoName", anyValue);
         });
     });
+
+    describe("Set Kitty address", function () {
+        it("Should set the kitty contract address", async function () {
+            // Given
+            const kittyAddress = "0x06012c8cf97bead5deae237070f9587f8e7a266d";
+            const { zombieFeedingContract, owner, otherAccount1 } = await loadFixture(deployOneYearLockFixture);
+
+            // When Then
+            await zombieFeedingContract.connect(owner).setKittyContractAddress(kittyAddress);
+            const kittyContractAddress = await zombieFeedingContract.kittyAddress();
+
+            try {
+                await zombieFeedingContract.connect(otherAccount1).setKittyContractAddress(kittyAddress);
+            } catch (e) {
+                expect(e.message).to.contain("Only contract owner can set kitty contract address");
+            }
+
+            expect(ethers.isAddress(kittyContractAddress)).to.be.true;
+            expect(kittyContractAddress.toLowerCase()).to.be.equal(kittyAddress.toLowerCase());
+        });
+    });
 });

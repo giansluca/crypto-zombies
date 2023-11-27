@@ -1,12 +1,9 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
 contract ZombieFactory {
 
     event NewZombie(uint zombieId, string name, uint dna);
-
-    uint dnaDigits = 16;
-    uint dnaModulus = 10 ** dnaDigits;
 
     struct Zombie {
         string name;
@@ -14,12 +11,11 @@ contract ZombieFactory {
     }
 
     Zombie[] zombies;
-
-    // Address of contract deployer
-    address payable public contractOwner;
-
+    uint dnaDigits = 16;
+    uint dnaModulus = 10 ** dnaDigits;
     mapping (uint => address) public zombieToOwner;
     mapping (address => uint) ownerZombieCount;
+    address payable public contractOwner;
 
     constructor() {
         contractOwner = payable(msg.sender);
