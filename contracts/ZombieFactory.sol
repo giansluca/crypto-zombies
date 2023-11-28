@@ -4,7 +4,6 @@ pragma solidity ^0.8.19;
 import "./open-zeppelin/Ownable.sol";
 
 contract ZombieFactory is Ownable {
-
     event NewZombie(uint zombieId, string name, uint dna);
 
     struct Zombie {
@@ -15,8 +14,8 @@ contract ZombieFactory is Ownable {
     Zombie[] zombies;
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
-    mapping (uint => address) public zombieToOwner;
-    mapping (address => uint) ownerZombieCount;
+    mapping(uint => address) public zombieToOwner;
+    mapping(address => uint) ownerZombieCount;
 
     constructor() Ownable(msg.sender) {}
 
@@ -36,8 +35,7 @@ contract ZombieFactory is Ownable {
     }
 
     function createRandomZombie(string memory _name) public {
-        if (msg.sender != owner())
-            require(ownerZombieCount[msg.sender] == 0, "Each user can create only one zombie!");
+        if (msg.sender != owner()) require(ownerZombieCount[msg.sender] == 0, "Each user can create only one zombie!");
 
         uint randDna = _generateRandomDna(_name);
         _createZombie(_name, randDna);
@@ -46,8 +44,4 @@ contract ZombieFactory is Ownable {
     function getZombies() public view returns (Zombie[] memory) {
         return zombies;
     }
-
-    // function owner() public view returns(address) {
-    //     return _owner;
-    // }
 }
