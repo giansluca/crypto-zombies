@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-contract ZombieFactory {
+import "./open-zeppelin/Ownable.sol";
+
+contract ZombieFactory is Ownable {
 
     event NewZombie(uint zombieId, string name, uint dna);
 
@@ -15,11 +17,8 @@ contract ZombieFactory {
     uint dnaModulus = 10 ** dnaDigits;
     mapping (uint => address) public zombieToOwner;
     mapping (address => uint) ownerZombieCount;
-    address payable public contractOwner;
 
-    constructor() {
-        contractOwner = payable(msg.sender);
-    }
+    constructor() Ownable(msg.sender) {}
 
     function _createZombie(string memory _name, uint _dna) internal {
         zombies.push(Zombie(_name, _dna));
@@ -37,7 +36,7 @@ contract ZombieFactory {
     }
 
     function createRandomZombie(string memory _name) public {
-        if (msg.sender != contractOwner)
+        if (msg.sender != owner())
             require(ownerZombieCount[msg.sender] == 0, "Each user can create only one zombie!");
 
         uint randDna = _generateRandomDna(_name);
@@ -47,4 +46,8 @@ contract ZombieFactory {
     function getZombies() public view returns (Zombie[] memory) {
         return zombies;
     }
+
+    // function owner() public view returns(address) {
+    //     return _owner;
+    // }
 }

@@ -22,7 +22,7 @@ describe("ZombieFeeding", function () {
             // Given
             const { zombieFeedingContract, owner } = await loadFixture(deployOneYearLockFixture);
             const contractAddress = await zombieFeedingContract.getAddress();
-            const contractOwner = await zombieFeedingContract.contractOwner();
+            const contractOwner = await zombieFeedingContract.owner();
 
             // When
             const balanceBigInt = await ethers.provider.getBalance(contractAddress);
@@ -91,7 +91,7 @@ describe("ZombieFeeding", function () {
             try {
                 await zombieFeedingContract.connect(otherAccount1).setKittyContractAddress(kittyAddress);
             } catch (e) {
-                expect(e.message).to.contain("Only contract owner can set kitty contract address");
+                expect(e.message).to.contain("OwnableUnauthorizedAccount");
             }
 
             expect(ethers.isAddress(kittyContractAddress)).to.be.true;

@@ -22,7 +22,7 @@ describe("ZombieFactory", function () {
             // Given
             const { zombieFactoryContract, owner } = await loadFixture(deployOneYearLockFixture);
             const contractAddress = await zombieFactoryContract.getAddress();
-            const contractOwner = await zombieFactoryContract.contractOwner();
+            const contractOwner = await zombieFactoryContract.owner();
 
             // When
             const balanceBigInt = await ethers.provider.getBalance(contractAddress);
