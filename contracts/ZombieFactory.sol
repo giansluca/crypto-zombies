@@ -9,18 +9,22 @@ contract ZombieFactory is Ownable {
     struct Zombie {
         string name;
         uint dna;
+        uint32 level;
+        uint32 readyTime;
     }
 
     Zombie[] zombies;
     uint dnaDigits = 16;
     uint dnaModulus = 10 ** dnaDigits;
+    uint cooldownTime = 1 days;
+
     mapping(uint => address) public zombieToOwner;
     mapping(address => uint) ownerZombieCount;
 
     constructor() Ownable(msg.sender) {}
 
     function _createZombie(string memory _name, uint _dna) internal {
-        zombies.push(Zombie(_name, _dna));
+        zombies.push(Zombie(_name, _dna, 1, uint32(block.timestamp + cooldownTime)));
         uint id = zombies.length - 1;
 
         zombieToOwner[id] = msg.sender;

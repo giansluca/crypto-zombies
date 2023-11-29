@@ -52,13 +52,33 @@ describe("ZombieFeeding", function () {
 
             await zombieFeedingContract.connect(otherAccount1).feedAndMultiply(1, 10, 334455);
             const zombies = await zombieFeedingContract.getZombies();
+            const zombieOwner1 = await zombieFeedingContract.zombieToOwner(0);
+            const zombieOwner2 = await zombieFeedingContract.zombieToOwner(1);
+            const zombieOwner3 = await zombieFeedingContract.zombieToOwner(2);
+            const zombieOwner4 = await zombieFeedingContract.zombieToOwner(3);
 
             // Then
             expect(zombies).to.have.length(4);
+
             expect(zombies[0].name).to.equal("Zulu-1");
+            expect(zombies[0].level).to.equal(1);
+            expect(new Date(Number(zombies[0].readyTime) * 1000)).to.be.greaterThan(new Date());
+            expect(zombieOwner1).to.be.equal(owner.address);
+
             expect(zombies[1].name).to.equal("Zulu-2");
+            expect(zombies[1].level).to.equal(1);
+            expect(new Date(Number(zombies[1].readyTime) * 1000)).to.be.greaterThan(new Date());
+            expect(zombieOwner2).to.be.equal(otherAccount1.address);
+
             expect(zombies[2].name).to.equal("Zulu-3");
+            expect(zombies[2].level).to.equal(1);
+            expect(new Date(Number(zombies[1].readyTime) * 1000)).to.be.greaterThan(new Date());
+            expect(zombieOwner3).to.be.equal(otherAccount2.address);
+
             expect(zombies[3].name).to.equal("NoName");
+            expect(zombies[3].level).to.equal(1);
+            expect(new Date(Number(zombies[1].readyTime) * 1000)).to.be.greaterThan(new Date());
+            expect(zombieOwner4).to.be.equal(otherAccount1.address);
         });
     });
 
