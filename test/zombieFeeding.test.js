@@ -50,7 +50,14 @@ describe("ZombieFeeding", function () {
                 expect(e.message).to.contain("Only zombie owner can feed!");
             }
 
-            await zombieFeedingContract.connect(otherAccount1).feedAndMultiply(1, 10, 334455);
+            try {
+                await zombieFeedingContract.connect(otherAccount1).feedAndMultiply(1, 10, 334455);
+            } catch (e) {
+                expect(e.message).to.contain("Zombie not ready!");
+            }
+
+            await zombieFeedingContract.connect(owner).feedAndMultiply(0, 10, 334455);
+
             const zombies = await zombieFeedingContract.getZombies();
             const zombieOwner1 = await zombieFeedingContract.zombieToOwner(0);
             const zombieOwner2 = await zombieFeedingContract.zombieToOwner(1);
@@ -78,7 +85,7 @@ describe("ZombieFeeding", function () {
             expect(zombies[3].name).to.equal("NoName");
             expect(zombies[3].level).to.equal(1);
             expect(new Date(Number(zombies[1].readyTime) * 1000)).to.be.greaterThan(new Date());
-            expect(zombieOwner4).to.be.equal(otherAccount1.address);
+            expect(zombieOwner4).to.be.equal(owner.address);
         });
     });
 
@@ -92,7 +99,7 @@ describe("ZombieFeeding", function () {
             await zombieFeedingContract.connect(otherAccount2).createRandomZombie("Zulu-3");
 
             // When Then
-            await expect(await zombieFeedingContract.connect(otherAccount1).feedAndMultiply(1, 10, 334455))
+            await expect(await zombieFeedingContract.connect(owner).feedAndMultiply(0, 10, 334455))
                 .to.emit(zombieFeedingContract, "NewZombie")
                 .withArgs(3, "NoName", anyValue);
         });
