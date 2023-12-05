@@ -1,9 +1,8 @@
 const { ethers } = require("hardhat");
 const { loadFixture } = require("@nomicfoundation/hardhat-toolbox/network-helpers");
-const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
 const { expect } = require("chai");
 
-describe("ZombieFeeding", function () {
+describe("ZombieHelper", function () {
     // We define a fixture to reuse the same setup in every test.
     // We use loadFixture to run this setup once, snapshot that state,
     // and reset Hardhat Network to that snapshot in every test.
@@ -77,6 +76,52 @@ describe("ZombieFeeding", function () {
             expect(ownerZombiesIds).to.have.length(2);
             expect(ownerZombiesIds[0]).to.equal(0);
             expect(ownerZombiesIds[1]).to.equal(1);
+        });
+    });
+
+    describe("Level up", function () {
+        it("Should pay to level up", async function () {
+            // Given
+            const { zombieHelperContract, owner } = await loadFixture(deployOneYearLockFixture);
+            await zombieHelperContract.connect(owner).createRandomZombie("Zulu-1");
+            await zombieHelperContract.createRandomZombie("Zulu-2");
+
+            const zombies = await zombieHelperContract.getZombies();
+            const ownerZombiesIds = await zombieHelperContract.getZombiesByOwner(owner.address);
+
+            // Then check creation
+            expect(zombies).to.have.length(2);
+            expect(ownerZombiesIds).to.have.length(2);
+            const zombieId1 = ownerZombiesIds[0];
+            const zombieId2 = ownerZombiesIds[1];
+
+            expect(zombies[0].name).to.equal("Zulu-1");
+            expect(zombies[0].level).to.equal(1);
+            expect(new Date(Number(zombies[0].readyTime) * 1000)).to.be.greaterThan(new Date());
+
+            expect(zombies[1].name).to.equal("Zulu-2");
+            expect(zombies[1].level).to.equal(1);
+            expect(new Date(Number(zombies[1].readyTime) * 1000)).to.be.greaterThan(new Date());
+
+            // Level Up
+            const levelUpFeeKO = { value: ethers.parseEther("0.0001") };
+            try {
+                await zombieHelperContract.levelUp(zombieId1, levelUpFeeKO);
+            } catch (e) {
+                expect(e.message).to.contain("level up fee must be 0.001 Eth");
+            }
+
+            const levelUpFeeOK = { value: ethers.parseEther("0.001") };
+            await zombieHelperContract.levelUp(zombieId2, levelUpFeeOK);
+            const zombiesAfterLevelUp = await zombieHelperContract.getZombies();
+
+            // Then
+            expect(zombiesAfterLevelUp).to.have.length(2);
+            expect(zombiesAfterLevelUp[0].name).to.equal("Zulu-1");
+            expect(zombiesAfterLevelUp[0].level).to.equal(1);
+
+            expect(zombiesAfterLevelUp[1].name).to.equal("Zulu-2");
+            expect(zombiesAfterLevelUp[1].level).to.equal(2);
         });
     });
 });
