@@ -139,10 +139,11 @@ describe("ZombieHelper", function () {
             expect(Number(balanceAfterLevelUp)).to.equal(0.002);
 
             const ownerBalanceBigIntBefore = await ethers.provider.getBalance(owner.address);
-            const ownerBalanceBefore = ethers.formatEther(ownerBalanceBigIntBefore);
 
             // Then withdraw
-            await zombieHelperContract.connect(owner).withdraw();
+            const tx = await zombieHelperContract.connect(owner).withdraw();
+            const receipt = await tx.wait();
+            const gasBigInt = receipt.gasUsed * receipt.gasPrice;
 
             // Then check contract balance after withdraw
             const balanceBigIntAfterWithDraw = await ethers.provider.getBalance(contractAddress);
@@ -153,7 +154,9 @@ describe("ZombieHelper", function () {
             // Then check owner balance after withdraw
             const ownerBalanceBigIntAfter = await ethers.provider.getBalance(owner.address);
             const ownerBalanceAfter = ethers.formatEther(ownerBalanceBigIntAfter);
-            expect(Number(ownerBalanceAfter).toFixed(3)).to.equal((Number(ownerBalanceBefore) + 0.002).toFixed(3));
+
+            const expectedOwnerBalance = Number(ethers.formatEther(ownerBalanceBigIntBefore - gasBigInt)) + 0.002;
+            expect(expectedOwnerBalance.toFixed(11)).to.equal(Number(ownerBalanceAfter).toFixed(11));
         });
     });
 });
