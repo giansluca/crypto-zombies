@@ -155,7 +155,10 @@ describe("ZombieHelper", function () {
             const ownerBalanceBigIntAfter = await ethers.provider.getBalance(owner.address);
             const ownerBalanceAfter = ethers.formatEther(ownerBalanceBigIntAfter);
 
-            const expectedOwnerBalance = Number(ethers.formatEther(ownerBalanceBigIntBefore - gasBigInt)) + 0.002;
+            const expectedOwnerBalance = Number(
+                ethers.formatEther(ownerBalanceBigIntBefore - gasBigInt + ethers.parseEther("0.002")),
+            );
+
             expect(expectedOwnerBalance.toFixed(11)).to.equal(Number(ownerBalanceAfter).toFixed(11));
         });
     });
