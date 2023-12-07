@@ -79,49 +79,81 @@ describe("ZombieHelper", function () {
         });
     });
 
-    describe("Level up", function () {
+    describe("Pay and Withdraw up", function () {
         it("Should pay to level up", async function () {
             // Given
-            const { zombieHelperContract, owner } = await loadFixture(deployOneYearLockFixture);
-            await zombieHelperContract.connect(owner).createRandomZombie("Zulu-1");
-            await zombieHelperContract.createRandomZombie("Zulu-2");
+            const { zombieHelperContract, owner, otherAccount1, otherAccount2 } =
+                await loadFixture(deployOneYearLockFixture);
+            const contractAddress = await zombieHelperContract.getAddress();
+            await zombieHelperContract.connect(otherAccount1).createRandomZombie("Zulu-1");
+            await zombieHelperContract.connect(otherAccount2).createRandomZombie("Zulu-2");
 
-            const zombies = await zombieHelperContract.getZombies();
-            const ownerZombiesIds = await zombieHelperContract.getZombiesByOwner(owner.address);
+            const totalZombies = await zombieHelperContract.getZombies();
+            const account1ZombiesIds = await zombieHelperContract.getZombiesByOwner(otherAccount1.address);
+            const account2ZombiesIds = await zombieHelperContract.getZombiesByOwner(otherAccount2.address);
 
             // Then check creation
-            expect(zombies).to.have.length(2);
-            expect(ownerZombiesIds).to.have.length(2);
-            const zombieId1 = ownerZombiesIds[0];
-            const zombieId2 = ownerZombiesIds[1];
+            expect(totalZombies).to.have.length(2);
+            expect(account1ZombiesIds).to.have.length(1);
+            expect(account2ZombiesIds).to.have.length(1);
 
-            expect(zombies[0].name).to.equal("Zulu-1");
-            expect(zombies[0].level).to.equal(1);
-            expect(new Date(Number(zombies[0].readyTime) * 1000)).to.be.greaterThan(new Date());
+            const account1ZombieId1 = account1ZombiesIds[0];
+            const account2ZombieId1 = account2ZombiesIds[0];
 
-            expect(zombies[1].name).to.equal("Zulu-2");
-            expect(zombies[1].level).to.equal(1);
-            expect(new Date(Number(zombies[1].readyTime) * 1000)).to.be.greaterThan(new Date());
+            expect(totalZombies[account1ZombieId1].name).to.equal("Zulu-1");
+            expect(totalZombies[account1ZombieId1].level).to.equal(1);
+            expect(totalZombies[account2ZombieId1].name).to.equal("Zulu-2");
+            expect(totalZombies[account2ZombieId1].level).to.equal(1);
 
-            // Level Up
+            // Then check contract balance
+            const balanceBigIntBeforeLevelUp = await ethers.provider.getBalance(contractAddress);
+            const balanceBeforeLevelUp = ethers.formatEther(balanceBigIntBeforeLevelUp);
+            expect(balanceBeforeLevelUp).to.equal("0.0");
+            expect(Number(balanceBeforeLevelUp)).to.equal(0.0);
+
+            // Then level Up
             const levelUpFeeKO = { value: ethers.parseEther("0.0001") };
             try {
-                await zombieHelperContract.levelUp(zombieId1, levelUpFeeKO);
+                await zombieHelperContract.connect(otherAccount1).levelUp(account1ZombieId1, levelUpFeeKO);
             } catch (e) {
                 expect(e.message).to.contain("level up fee must be 0.001 Eth");
             }
 
             const levelUpFeeOK = { value: ethers.parseEther("0.001") };
-            await zombieHelperContract.levelUp(zombieId2, levelUpFeeOK);
-            const zombiesAfterLevelUp = await zombieHelperContract.getZombies();
+            await zombieHelperContract.connect(otherAccount1).levelUp(account1ZombieId1, levelUpFeeOK);
+            await zombieHelperContract.connect(otherAccount1).levelUp(account1ZombieId1, levelUpFeeOK);
+            const totalZombiesAfterLevelUp = await zombieHelperContract.getZombies();
 
-            // Then
-            expect(zombiesAfterLevelUp).to.have.length(2);
-            expect(zombiesAfterLevelUp[0].name).to.equal("Zulu-1");
-            expect(zombiesAfterLevelUp[0].level).to.equal(1);
+            // Then check levels
+            expect(totalZombiesAfterLevelUp).to.have.length(2);
+            expect(totalZombiesAfterLevelUp[0].name).to.equal("Zulu-1");
+            expect(totalZombiesAfterLevelUp[0].level).to.equal(3);
 
-            expect(zombiesAfterLevelUp[1].name).to.equal("Zulu-2");
-            expect(zombiesAfterLevelUp[1].level).to.equal(2);
+            expect(totalZombiesAfterLevelUp[1].name).to.equal("Zulu-2");
+            expect(totalZombiesAfterLevelUp[1].level).to.equal(1);
+
+            // Then check contract balance again and owner balance
+            const balanceBigIntAfterLevelUp = await ethers.provider.getBalance(contractAddress);
+            const balanceAfterLevelUp = ethers.formatEther(balanceBigIntAfterLevelUp);
+            expect(balanceAfterLevelUp).to.equal("0.002");
+            expect(Number(balanceAfterLevelUp)).to.equal(0.002);
+
+            const ownerBalanceBigIntBefore = await ethers.provider.getBalance(owner.address);
+            const ownerBalanceBefore = ethers.formatEther(ownerBalanceBigIntBefore);
+
+            // Then withdraw
+            await zombieHelperContract.connect(owner).withdraw();
+
+            // Then check contract balance after withdraw
+            const balanceBigIntAfterWithDraw = await ethers.provider.getBalance(contractAddress);
+            const balanceAfterWithDraw = ethers.formatEther(balanceBigIntAfterWithDraw);
+            expect(balanceAfterWithDraw).to.equal("0.0");
+            expect(Number(balanceAfterWithDraw)).to.equal(0.0);
+
+            // Then check owner balance after withdraw
+            const ownerBalanceBigIntAfter = await ethers.provider.getBalance(owner.address);
+            const ownerBalanceAfter = ethers.formatEther(ownerBalanceBigIntAfter);
+            expect(Number(ownerBalanceAfter).toFixed(3)).to.equal((Number(ownerBalanceBefore) + 0.002).toFixed(3));
         });
     });
 });
