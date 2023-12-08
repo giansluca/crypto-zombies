@@ -42,12 +42,8 @@ describe("ZombieAttack", function () {
             await zombieAttackContract.connect(otherAccount1).createRandomZombie("Zulu-2");
             await zombieAttackContract.connect(otherAccount2).createRandomZombie("Zulu-3");
 
-            // When
-
-            const zombies = await zombieAttackContract.connect(owner).getZombies();
-
-            // Then
-            expect(zombies).to.have.length(3);
+            // When Then
+            await zombieAttackContract.connect(owner).attack(0, 1);
         });
     });
 });

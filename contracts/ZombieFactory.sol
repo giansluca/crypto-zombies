@@ -11,6 +11,8 @@ contract ZombieFactory is Ownable {
         uint dna;
         uint32 level;
         uint32 readyTime;
+        uint16 winCount;
+        uint16 lossCount;
     }
 
     Zombie[] zombies;
@@ -24,7 +26,7 @@ contract ZombieFactory is Ownable {
     constructor() Ownable(msg.sender) {}
 
     function _createZombie(string memory _name, uint _dna) internal {
-        zombies.push(Zombie(_name, _dna, 1, uint32(block.timestamp + cooldownTime)));
+        zombies.push(Zombie(_name, _dna, 1, uint32(block.timestamp + cooldownTime), 0, 0));
         uint id = zombies.length - 1;
 
         zombieToOwner[id] = msg.sender;
