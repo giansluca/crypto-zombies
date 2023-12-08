@@ -50,15 +50,29 @@ describe("ZombieHelper", function () {
             }
 
             try {
-                await zombieHelperContract.connect(otherAccount1).changeName(1, 999999);
+                await zombieHelperContract.connect(otherAccount1).changeName(0, 999999);
             } catch (e) {
                 expect(e.message).to.contain("level not sufficient");
             }
 
-            const zombies = await zombieHelperContract.getZombies();
+            const levelUpFeeOK = { value: ethers.parseEther("0.001") };
+            await zombieHelperContract.connect(otherAccount1).levelUp(1, levelUpFeeOK);
+            await zombieHelperContract.connect(otherAccount1).levelUp(1, levelUpFeeOK);
+            await zombieHelperContract.connect(otherAccount1).changeName(1, "Bubu");
+
+            const zombies = await zombieHelperContract.connect(owner).getZombies();
 
             // Then
             expect(zombies).to.have.length(3);
+
+            expect(zombies[0].name).to.equal("Zulu-1");
+            expect(zombies[0].level).to.equal(1);
+
+            expect(zombies[1].name).to.equal("Bubu");
+            expect(zombies[1].level).to.equal(3);
+
+            expect(zombies[2].name).to.equal("Zulu-3");
+            expect(zombies[2].level).to.equal(1);
         });
     });
 
@@ -88,9 +102,13 @@ describe("ZombieHelper", function () {
             await zombieHelperContract.connect(otherAccount1).createRandomZombie("Zulu-1");
             await zombieHelperContract.connect(otherAccount2).createRandomZombie("Zulu-2");
 
-            const totalZombies = await zombieHelperContract.getZombies();
-            const account1ZombiesIds = await zombieHelperContract.getZombiesByOwner(otherAccount1.address);
-            const account2ZombiesIds = await zombieHelperContract.getZombiesByOwner(otherAccount2.address);
+            const totalZombies = await zombieHelperContract.connect(owner).getZombies();
+            const account1ZombiesIds = await zombieHelperContract
+                .connect(owner)
+                .getZombiesByOwner(otherAccount1.address);
+            const account2ZombiesIds = await zombieHelperContract
+                .connect(owner)
+                .getZombiesByOwner(otherAccount2.address);
 
             // Then check creation
             expect(totalZombies).to.have.length(2);

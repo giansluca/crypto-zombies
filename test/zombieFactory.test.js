@@ -50,10 +50,10 @@ describe("ZombieFactory", function () {
                 expect(e.message).to.contain("Each user can create only one zombie!");
             }
 
-            const zombies = await zombieFactoryContract.getZombies();
-            const zombieOwner1 = await zombieFactoryContract.zombieToOwner(0);
-            const zombieOwner2 = await zombieFactoryContract.zombieToOwner(1);
-            const zombieOwner3 = await zombieFactoryContract.zombieToOwner(2);
+            const zombies = await zombieFactoryContract.connect(owner).getZombies();
+            const zombieOwner1 = await zombieFactoryContract.connect(owner).zombieToOwner(0);
+            const zombieOwner2 = await zombieFactoryContract.connect(owner).zombieToOwner(1);
+            const zombieOwner3 = await zombieFactoryContract.connect(owner).zombieToOwner(2);
 
             // Then
             expect(zombies).to.have.length(3);
@@ -78,10 +78,10 @@ describe("ZombieFactory", function () {
     describe("Events", function () {
         it("Should emit an event on zombie creation", async function () {
             // Given
-            const { zombieFactoryContract } = await loadFixture(deployOneYearLockFixture);
+            const { zombieFactoryContract, owner } = await loadFixture(deployOneYearLockFixture);
 
             // When Then
-            await expect(await zombieFactoryContract.createRandomZombie("Zulu-1"))
+            await expect(await zombieFactoryContract.connect(owner).createRandomZombie("Zulu-1"))
                 .to.emit(zombieFactoryContract, "NewZombie")
                 .withArgs(0, "Zulu-1", anyValue);
         });

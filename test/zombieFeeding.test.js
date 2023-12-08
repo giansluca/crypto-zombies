@@ -47,7 +47,7 @@ describe("ZombieFeeding", function () {
             try {
                 await zombieFeedingContract.connect(otherAccount2).feedAndMultiply(1, 10, 334455);
             } catch (e) {
-                expect(e.message).to.contain("Only zombie owner can feed!");
+                expect(e.message).to.contain("Only zombie owner is allowed!");
             }
 
             try {
@@ -58,11 +58,11 @@ describe("ZombieFeeding", function () {
 
             await zombieFeedingContract.connect(owner).feedAndMultiply(0, 10, 334455);
 
-            const zombies = await zombieFeedingContract.getZombies();
-            const zombieOwner1 = await zombieFeedingContract.zombieToOwner(0);
-            const zombieOwner2 = await zombieFeedingContract.zombieToOwner(1);
-            const zombieOwner3 = await zombieFeedingContract.zombieToOwner(2);
-            const zombieOwner4 = await zombieFeedingContract.zombieToOwner(3);
+            const zombies = await zombieFeedingContract.connect(owner).getZombies();
+            const zombieOwner1 = await zombieFeedingContract.connect(owner).zombieToOwner(0);
+            const zombieOwner2 = await zombieFeedingContract.connect(owner).zombieToOwner(1);
+            const zombieOwner3 = await zombieFeedingContract.connect(owner).zombieToOwner(2);
+            const zombieOwner4 = await zombieFeedingContract.connect(owner).zombieToOwner(3);
 
             // Then
             expect(zombies).to.have.length(4);
@@ -113,7 +113,7 @@ describe("ZombieFeeding", function () {
 
             // When Then
             await zombieFeedingContract.connect(owner).setKittyContractAddress(kittyAddress);
-            const kittyContractAddress = await zombieFeedingContract.kittyAddress();
+            const kittyContractAddress = await zombieFeedingContract.connect(owner).kittyAddress();
 
             try {
                 await zombieFeedingContract.connect(otherAccount1).setKittyContractAddress(kittyAddress);
