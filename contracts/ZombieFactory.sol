@@ -2,8 +2,11 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/math/Math.sol";
 
 contract ZombieFactory is Ownable {
+    using Math for uint256;
+
     event NewZombie(uint zombieId, string name, uint dna);
 
     struct Zombie {
