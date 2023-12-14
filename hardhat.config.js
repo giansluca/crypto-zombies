@@ -8,8 +8,7 @@ module.exports = {
         hardhat: {},
         // hardhat: {
         //     forking: {
-        //         url: API_KEY,
-        //         blockNumber: 22156659, // Upgrade to fix ecrecover was executed on block #22156660
+        //         url: "https://mainnet.infura.io/v3/<key>",
         //     },
         // },
     },
